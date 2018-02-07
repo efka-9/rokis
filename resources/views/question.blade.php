@@ -9,8 +9,9 @@ Klausimas: <br>
 Atsakymai: <br>
 
 <form action="{{ route('next') }}" method="POST">
-  @foreach($question->answers as $answer)
-    <input type="radio" name="answer" value="{{ $answer }}">{{ $answer->value }} <br>
+  @foreach($question->answers as $key => $answer)
+    <input type="radio" name="answer" value="{{ $answer }}" {{ $key == 0 ? 'checked' : '' }}>
+    {{ $answer->value }} <br>
   @endforeach
 
   {{ csrf_field() }}
