@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 
 use App\Src\Quiz;
 use App\Src\Question;
+use App\Src\Answer;
 
 class BaseController extends Controller
 {
@@ -35,8 +36,8 @@ class BaseController extends Controller
             ->first()
         ;
 
-        //pridedam taskus
-        with(new Quiz)->addPoints($question->quiz_id, $answer->points);
+        //pridedam visus answer id i sesija
+        session()->push("quiz_{$question->quiz_id}", $answer->id);
 
         //darysim redirekta i sekanti klausima
         if ($next_question) {
@@ -49,14 +50,20 @@ class BaseController extends Controller
 
     public function getOutput(Request $req, $quiz_id)
     {
-        //paziurim kiek surinko tasku
-        $points = session("quiz_{$quiz_id}");
+        //is sesijos istraukiam visus answer ids ir pagal juos paimam is duombazes
+        $answers = Answer::whereIn('id', session("quiz_{$quiz_id}"))->get();
+
+        $points = 0;
+        foreach ($answers as $answer) {
+            $points += $answer->points;
+        }
 
         //istrinam is sesijos taskus kad neuzsiliktu ant kito quizo
         $req->session()->forget("quiz_{$quiz_id}");
 
         return view('output', [
-            'points' => $points
+            'points' => $points,
+            'answers' => $answers
         ]);
     }
 }
